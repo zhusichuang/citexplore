@@ -1,0 +1,107 @@
+package citexplore.offlinedownload.downloader;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import net.javacrumbs.jsonunit.JsonAssert;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.File;
+
+/**
+ * Url跳转信息测试类。
+ *
+ * @author Zhu, Sichuang
+ */
+public class UrlRedirectionTest {
+
+    // **************** 公开变量
+
+    // **************** 私有变量
+
+    /**
+     * Log4j logger。
+     */
+    private static Logger logger = LogManager.getLogger(UrlRedirectionTest
+            .class);
+
+    // **************** 继承方法
+
+    // **************** 公开方法
+
+    /**
+     * 测试json函数的基本功能。
+     */
+    @Test
+    public void testJson() {
+        UrlRedirection urlRedirection = new UrlRedirection("abc123", false);
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode node = mapper.createObjectNode();
+        urlRedirection.json(node);
+        logger.info(node.get("redirectedUrl").asText());
+        try {
+            JsonAssert.assertJsonEquals(new ObjectMapper().readTree(new File
+                    (getClass().getResource
+                            ("../json/TestUrlRedirectionJsonTrue" + ".json")
+                            .getFile())), node);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+
+        urlRedirection = new UrlRedirection("abcd1234", true);
+        urlRedirection.json(node);
+        try {
+            JsonAssert.assertJsonEquals(new ObjectMapper().readTree(new File
+                    (getClass().getResource
+                            ("../json/TestUrlRedirectionJsonFalse" + ".json")
+                            .getFile())), node);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    /**
+     * 测试fromJson的基本功能。
+     */
+    @Test
+    public void testFromJson() {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            JsonNode node = mapper.readTree(new File(getClass().getResource
+                    ("../json/TestUrlRedirectionFromJsonTrue.json").getFile()));
+            UrlRedirection urlRedirection = UrlRedirection.fromJson(
+                    (ObjectNode) node);
+
+            Assert.assertEquals(node.get("redirectedUrl").asText(),
+                    urlRedirection.redirectedUrl);
+            Assert.assertEquals(node.get("chain").asBoolean(), urlRedirection
+                    .chain);
+
+            node = mapper.readTree(new File(getClass().getResource
+                    ("../json/TestUrlRedirectionFromJsonFalse.json").getFile
+                    ()));
+            urlRedirection = UrlRedirection.fromJson((ObjectNode) node);
+
+            Assert.assertEquals(node.get("redirectedUrl").asText(),
+                    urlRedirection.redirectedUrl);
+            Assert.assertEquals(node.get("chain").asBoolean(), urlRedirection
+                    .chain);
+
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    // **************** 私有方法
+}

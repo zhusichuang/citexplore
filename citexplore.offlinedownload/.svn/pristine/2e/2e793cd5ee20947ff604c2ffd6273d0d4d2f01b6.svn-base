@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="lib" path="lib/bson-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/cx2-fnd.jar"/>
+	<classpathentry kind="lib" path="lib/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.7.1.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.7.1.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.7.1-1.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-nosql-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/mongodb-driver-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/mongodb-driver-core-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/noggit-0.7.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.16.jar"/>
+	<classpathentry kind="lib" path="lib/json-unit-1.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/json-unit-core-1.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.4.4.jar"/>
+	<classpathentry kind="lib" path="lib/kafka-clients-0.9.0.0.jar" sourcepath="D:/Root/kafka/libs/kafka_2.11-0.9.0.0-sources.jar"/>
+	<classpathentry kind="lib" path="lib/riak-client-2.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/netty-all-4.0.33.Final.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-collections-3.2.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
+	<classpathentry kind="lib" path="lib/guava-11.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/hadoop-auth-2.7.2.jar"/>
+	<classpathentry kind="lib" path="lib/hadoop-common-2.7.2.jar" sourcepath="lib/hadoop-common-2.7.2.jar"/>
+	<classpathentry kind="lib" path="lib/hadoop-hdfs-2.7.2.jar"/>
+	<classpathentry kind="lib" path="lib/htrace-core-3.1.0-incubating.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="lib/protobuf-java-2.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/servlet-api-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/cx2-frn.jar"/>
+	<classpathentry kind="lib" path="lib/zookeeper-3.4.6.jar"/>
+	<classpathentry kind="lib" path="lib/GroboUtils-5-core.jar"/>
+	<classpathentry kind="lib" path="lib/commons-configuration-1.10.jar"/>
+	<classpathentry kind="lib" path="lib/redisson-2.2.14-SNAPSHOT.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,97 @@
+package citexplore.offlinedownload.downloader;
+
+import citexplore.foundation.Config;
+import citexplore.offlinedownload.ResourceStorage;
+import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.commands.kv.DeleteValue;
+import com.basho.riak.client.api.commands.kv.ListKeys;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * 跳转信息存储测试类。
+ *
+ * @author Zhu, Sichuang
+ */
+public class RedirectionStorageTest {
+
+    // **************** 公开变量
+
+    // **************** 私有变量
+
+    /**
+     * Log4j logger。
+     */
+    private static Logger logger = LogManager.getLogger
+            (RedirectionStorageTest.class);
+
+    // **************** 继承方法
+
+    // **************** 公开方法
+
+    /**
+     * 清理Riak。
+     */
+    @BeforeClass
+    public static void beforeClass() {
+        RedirectionStorageTest.cleanRiak();
+    }
+
+    /**
+     * 清理Riak。
+     */
+    @After
+    public void after() {
+        RedirectionStorageTest.cleanRiak();
+    }
+
+    /**
+     * 清理Riak。
+     */
+    public static void cleanRiak() {
+        logger.info("Cleaning riak...");
+        RiakClient client = ResourceStorage.clientFromRiakServers(Config
+                .getNotNull(RedirectionStorage.RIAK_SERVERS));
+        Namespace namespace = new Namespace(RedirectionStorage.RIAK_BUCKET);
+        ListKeys lk = new ListKeys.Builder(namespace).build();
+        try {
+            ListKeys.Response response = client.execute(lk);
+            for (Location location : response) {
+                DeleteValue dv = new DeleteValue.Builder(location).build();
+                client.execute(dv);
+            }
+        } catch (Exception e) {
+            logger.info(e);
+            e.printStackTrace();
+        }
+        client.shutdown();
+    }
+
+    /**
+     * 测试riak存储读取功能。
+     */
+    @Test
+    public void testRedirectionStorage() {
+        UrlRedirection urlRedirection = new UrlRedirection("asdfghg", false);
+        RedirectionStorage.instance.put("qweqwe1", urlRedirection);
+        UrlRedirection urlRedirection2 = RedirectionStorage.instance.get
+                ("wqesad");
+        UrlRedirection urlRedirection3 = RedirectionStorage.instance.get
+                ("qweqwe1");
+
+        Assert.assertEquals(urlRedirection2, null);
+        Assert.assertEquals(urlRedirection.redirectedUrl, urlRedirection3
+                .redirectedUrl);
+        Assert.assertEquals(!urlRedirection.chain, !urlRedirection3
+                .chain);
+    }
+
+    // **************** 私有方法
+
+}

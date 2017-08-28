@@ -1,0 +1,118 @@
+package citexplore.offlinedownload.downloader;
+
+import citexplore.foundation.Config;
+import citexplore.offlinedownload.ResourceStorage;
+import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.commands.kv.FetchValue;
+import com.basho.riak.client.api.commands.kv.StoreValue;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sun.istack.internal.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+/**
+ * 跳转信息存储。
+ *
+ * @author Zhu, Sichuang
+ */
+public class RedirectionStorage {
+
+    // **************** 公开变量
+
+    /**
+     * 全局唯一跳转信息存储读取对象。
+     */
+    public static final RedirectionStorage instance = new RedirectionStorage();
+
+    /**
+     * 跳转信息存储Riak服务器配置项键。
+     */
+    public static final String RIAK_SERVERS = "cx.ofd.redirectioncache" + "" +
+            ".riakservers";
+
+    /**
+     * 跳转信息存储表。
+     */
+    public static final String RIAK_BUCKET = "citexplore_redirection";
+
+    // **************** 私有变量
+
+    /**
+     * 跳转信息存储RiakClient。
+     */
+    private RiakClient client = null;
+
+    /**
+     * Log4j logger。
+     */
+    private static Logger logger = LogManager.getLogger(RedirectionStorage.class);
+
+    
+    // **************** 继承方法
+
+    // **************** 公开方法
+
+    /**
+     * 存储跳转信息。
+     *
+     * @param url            要存储的原始url。
+     * @param urlRedirection 要存储的跳转信息。
+     */
+    public void put(@NotNull String url, UrlRedirection urlRedirection) {
+        Location location = new Location(new Namespace(RIAK_BUCKET), url);
+
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+        if (urlRedirection.json(node)) {
+            try {
+                client.execute(new StoreValue.Builder(new ObjectMapper()
+                        .writeValueAsString(node)).withLocation(location)
+                        .build());
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+                throw new RuntimeException(e);
+            }
+
+        }
+
+    }
+
+    /**
+     * 获得跳转信息。
+     *
+     * @param url url。
+     * @return 跳转信息。
+     */
+    public UrlRedirection get(@NotNull String url) {
+        Location location = new Location(new Namespace(RIAK_BUCKET), url);
+        ObjectNode node = null;
+        FetchValue fv = new FetchValue.Builder(location).build();
+
+        try {
+            String responseJson = client.execute(fv).getValue(String.class);
+            if (null == responseJson) {
+                return null;
+            }
+            node = (ObjectNode) new ObjectMapper().readTree(responseJson);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+
+        return UrlRedirection.fromJson(node);
+
+    }
+
+    // **************** 私有方法
+
+    /**
+     * 私有的构造函数。
+     */
+    private RedirectionStorage() {
+        client = ResourceStorage.clientFromRiakServers(Config.getNotNull
+                (RIAK_SERVERS));
+    }
+}

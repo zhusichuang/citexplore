@@ -1,0 +1,39 @@
+package citexplore.offlinedownload.downloader;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+/**
+ * @author Zhang, Yin
+ */
+public class NoRedirectPdfUrlRedirector extends PdfUrlRedirector {
+
+    // **************** 公开变量
+
+    // **************** 私有变量
+
+    /**
+     * Log4j logger。
+     */
+    private static Logger logger = LogManager.getLogger(NoRedirectPdfUrlRedirector.class);
+
+    // **************** 继承方法
+
+    /**
+     * 重定向url。
+     *
+     * @param url url。
+     * @return 重定向的Url。
+     */
+    @Override
+    public UrlRedirection redirectImpl(String url) {
+        // TODO
+        return null;
+    }
+
+
+    // **************** 公开方法
+
+    // **************** 私有方法
+
+}

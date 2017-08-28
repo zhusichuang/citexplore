@@ -1,0 +1,57 @@
+package citexplore.offlinedownload.downloader;
+
+import java.io.IOException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
+import org.junit.Test;
+
+import citexplore.foundation.util.NetUtil;
+
+/**
+ * 
+ *
+ * @author Zhu,Sichuang
+ */
+public class IeeeXplorePdfUrlRedirectorTest {
+
+	// **************** 公开变量
+
+	// **************** 私有变量
+
+	/**
+	 * Log4j logger。
+	 */
+	private static Logger logger = LogManager
+			.getLogger(IeeeXplorePdfUrlRedirectorTest.class);
+
+	// **************** 继承方法
+
+	// **************** 公开方法
+
+	/**
+	 * 测试redirect函数。
+	 */
+	@Test
+	public void testRedirect() {
+		IeeeXplorePdfUrlRedirector ieeeXplorePdfUrlRedirector = new IeeeXplorePdfUrlRedirector();
+		UrlRedirection urlRedirection = ieeeXplorePdfUrlRedirector
+				.redirectImpl("http://ieeexplore.ieee.org"
+						+ "/xpl/articleDetails.jsp?arnumber=4579949&"
+						+ "newsearch=true&queryText=information%20retrieval");
+
+		try {
+			Assert.assertEquals("application/pdf",
+					NetUtil.urlConnection(urlRedirection.redirectedUrl)
+							.getContentType());
+			Assert.assertTrue(urlRedirection.noMoreRedirection);
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new RuntimeException(e);
+		}
+
+	}
+	// **************** 私有方法
+
+}

@@ -1,0 +1,67 @@
+package citexplore.offlinedownload.downloader;
+
+import citexplore.foundation.util.NetUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * 百度学术pdf url重定向类。
+ *
+ * @author Zhu, SiChuang
+ * @author Zhang, Yin
+ */
+public class BaiduXueshuPdfUrlRedirector extends PdfUrlRedirector {
+
+    // **************** 公开变量
+
+    // **************** 私有变量
+
+    /**
+     * Log4j logger。
+     */
+    private static Logger logger = LogManager.getLogger
+            (BaiduXueshuPdfUrlRedirector.class);
+
+    // **************** 继承方法
+
+    /**
+     * 重定向url。
+     *
+     * @param url url。
+     * @return 重定向的Url。
+     */
+    @Override
+    protected UrlRedirection redirectImpl(String url) {
+        String redirectedUrl = "";
+        Pattern pattern = Pattern.compile("sc_vurl=([^&]+)");
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.find()) { // url中直接包含跳转地址。
+            try {
+                redirectedUrl = URLDecoder.decode(matcher.group(1), "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                logger.error(e.getMessage(), e);
+            }
+        } else { // url中不包含跳转地址,需要从正文中解析得到。
+            String html = NetUtil.fetchStringSafely(url);
+            pattern = Pattern.compile("<\\s*iframe((?!src).)" +
+                    "*src\\s*=\\s*[\"']?([^\"']+)");
+            matcher = pattern.matcher(html);
+            if (matcher.find()) {
+                redirectedUrl = matcher.group(2);
+            }
+        }
+
+        return redirectedUrl.equals("") ? new UrlRedirection(url, false) :
+                new UrlRedirection(redirectedUrl, true);
+    }
+
+    // **************** 公开方法
+
+    // **************** 私有方法
+
+}

@@ -1,0 +1,210 @@
+package citexplore.content;
+
+import java.io.IOException;
+import java.net.URI;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.sun.istack.internal.NotNull;
+
+import citexplore.foundation.Config;
+import citexplore.offlinedownload.Resource;
+
+/**
+ * Hdfs访问工具类。
+ *
+ * @author Zhu,Sichuang
+ */
+public class HdfsUtil {
+
+	// **************** 公开变量
+
+	/**
+	 * 全局唯一Hdfs访问工具类实例，
+	 */
+	public static final HdfsUtil instance = new HdfsUtil();
+
+	/**
+	 * HDFS服务器配置项键。
+	 */
+	public static final String HDFS_SERVERS = "cx.cnt.hdfsutil.hdfsservers";
+
+	// **************** 私有变量
+
+	/**
+	 * Hdfs访问对象。
+	 */
+	protected FileSystem hdfs;
+
+	/**
+	 * hdfs工作路径。
+	 */
+	public static String hdfsWorkingPath = "/opt/citexplore/offlinedownload/";
+
+	/**
+	 * content工作路径。
+	 */
+	public static String contentWorkingPath = "/opt/citexplore/content/";
+
+	/**
+	 * Log4j logger。
+	 */
+	private static Logger logger = LogManager.getLogger(HdfsUtil.class);
+
+	// **************** 继承方法
+
+	// **************** 公开方法
+
+	/**
+	 * 将提取的正文内容写入hdfs。
+	 * 
+	 * @param resource
+	 *            资源对象。
+	 * @param content
+	 *            提取的正文内容。
+	 */
+	public void write(@NotNull Resource resource, String content) {
+		logger.info("Writing content to hdfs: " + resource.url);
+
+		FSDataOutputStream out = null;
+		Path path = new Path(contentWorkingPath + resource.relativePath);
+		try {
+			out = hdfs.create(path);
+			out.writeUTF(content);
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new RuntimeException(e);
+		} finally {
+			if (null != out) {
+				try {
+					out.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
+
+	/**
+	 * 判断提取的正文内容是否已经存在于hdfs。
+	 * 
+	 * @param resource
+	 *            资源对象。
+	 * @return 是否存在。
+	 */
+	public boolean contentExists(@NotNull Resource resource) {
+		return exists(resource, contentWorkingPath);
+	}
+
+	/**
+	 * 判断原文件是否存在于hdfs上。
+	 * 
+	 * @param resource
+	 *            资源对象。
+	 * @return
+	 */
+	public boolean fileExists(@NotNull Resource resource) {
+		return exists(resource, hdfsWorkingPath);
+	}
+
+	/**
+	 * 从hdfs上获取正文内容。
+	 * 
+	 * @param resource
+	 *            资源对象。
+	 * @return 提取的正文内容。
+	 */
+	public String content(@NotNull Resource resource) {
+		logger.info("Reading content from hdfs: " + resource.url);
+		return read(resource, contentWorkingPath);
+	}
+
+	// TODO HDFS autoclose timeout
+
+	/**
+	 * 得到源文件中的内容。
+	 * 
+	 * @param resource
+	 *            资源对象。
+	 * @return
+	 */
+	public String stringFile(@NotNull Resource resource) {
+		logger.info("Reading string file from hdfs: " + resource.url);
+		return read(resource, hdfsWorkingPath);
+	}
+
+	// **************** 私有方法
+
+	/**
+	 * 私有构造函。
+	 */
+	private HdfsUtil() {
+		try {
+			hdfs = FileSystem.get(URI.create(
+					Config.get(HDFS_SERVERS, "hdfs://192.168.56.11:9000")),
+					new Configuration());
+		} catch (IOException e) {
+			logger.fatal((e));
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * 判断hdfs上是否存在某个文件。
+	 * 
+	 * @param resource
+	 *            资源对象。
+	 * @param workingPath
+	 *            工作路径。
+	 * @return 文件是否存在。
+	 */
+	private boolean exists(@NotNull Resource resource, String workingPath) {
+		Path path = new Path(workingPath + resource.relativePath);
+		try {
+			return hdfs.exists(path);
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * 从hdfs读取文件中的数据。
+	 * 
+	 * @param resource
+	 *            资源对象。
+	 * @param workingPath
+	 *            工作路径。
+	 * @return 读取到的数据。
+	 */
+	private String read(@NotNull Resource resource, String workingPath) {
+		String content = "";
+
+		if (exists(resource, workingPath)) {
+			Path path = new Path(workingPath + resource.relativePath);
+			FSDataInputStream in = null;
+
+			try {
+				in = hdfs.open(path);
+				content = in.readUTF();
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+				throw new RuntimeException(e);
+			} finally {
+				if (null != in) {
+					try {
+						in.close();
+					} catch (IOException e) {
+					}
+				}
+			}
+		}
+
+		return content;
+	}
+
+}

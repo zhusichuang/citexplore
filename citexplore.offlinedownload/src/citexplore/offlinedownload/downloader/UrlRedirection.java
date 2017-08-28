@@ -1,0 +1,81 @@
+package citexplore.offlinedownload.downloader;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sun.istack.internal.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+/**
+ * Url跳转信息。
+ *
+ * @author Zhu, Sichuang
+ * @author Zhang, Yin
+ */
+public class UrlRedirection {
+
+    // **************** 公开变量
+
+    /**
+     * 跳转url。
+     */
+    public final String redirectedUrl;
+
+    /**
+     * 不再进行后续跳转。
+     */
+    public final boolean chain;
+
+    // **************** 私有变量
+
+    /**
+     * Log4j logger。
+     */
+    private static Logger logger = LogManager.getLogger(UrlRedirection.class);
+
+    // **************** 继承方法
+
+    // **************** 公开方法
+
+    /**
+     * Url跳转信息构造函数。
+     *
+     * @param redirectedUrl     跳转url。
+     * @param chain 不再进行后续跳转。
+     */
+    public UrlRedirection(String redirectedUrl, boolean chain) {
+        this.redirectedUrl = redirectedUrl;
+        this.chain = chain;
+    }
+
+    /**
+     * 得到url跳转信息json。
+     *
+     * @param node 用于写入url跳转信息json的ObjectNode。
+     * @return 是否写入了json。
+     */
+    public boolean json(ObjectNode node) {
+        if ("".equals(redirectedUrl)) {
+            return false;
+        }
+        node.put("redirectedUrl", redirectedUrl);
+        node.put("chain", chain);
+        return true;
+    }
+
+    /**
+     * 根据url跳转信息json填充url跳转信息对象。
+     *
+     * @param objectNode url跳转信息json。
+     * @return 根据url跳转信息json填充得到的url跳转信息对象。
+     */
+    public static UrlRedirection fromJson(@NotNull ObjectNode objectNode) {
+        if (null == (objectNode.get("redirectedUrl"))) {
+            return null;
+        } else {
+            return new UrlRedirection(objectNode.get("redirectedUrl").asText
+                    (), objectNode.get("chain").asBoolean());
+        }
+    }
+    // **************** 私有方法
+
+}

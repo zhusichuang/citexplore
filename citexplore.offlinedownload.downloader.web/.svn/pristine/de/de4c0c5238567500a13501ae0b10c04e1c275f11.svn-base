@@ -1,0 +1,13 @@
+<%@page import="citexplore.offlinedownload.manager.NodeStatus"%>
+<%@page import="citexplore.offlinedownload.downloader.Downloader"%>
+<%@page import="com.fasterxml.jackson.databind.JsonNode"%>
+<%@page import="com.fasterxml.jackson.databind.ObjectMapper"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!-- @author: Zhu, Sichuang -->
+<!-- @author: Zhang, Yin -->
+<%
+	out.clear();
+	out.print("{\"status\":\""+ NodeStatus.alive.toInt()+"\"}");
+	out.flush();
+%>

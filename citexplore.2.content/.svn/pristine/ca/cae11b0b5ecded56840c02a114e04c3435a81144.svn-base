@@ -1,0 +1,27 @@
+package citexplore.content;
+
+/**
+ * 内容提供者接口。
+ *
+ * @author Zhang, Yin
+ */
+public interface ContentProvider {
+    
+    // **************** 公开变量
+
+    // **************** 私有变量
+
+    // **************** 继承方法
+
+    // **************** 公开方法
+
+    /**
+     * 获取内容文本。
+     *
+     * @return 内容文本。
+     */
+    String content();
+
+    // **************** 私有方法
+
+}

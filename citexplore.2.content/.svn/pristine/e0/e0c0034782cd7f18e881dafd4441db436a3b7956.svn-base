@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/bin" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="false" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="module-library">
+      <library name="lib">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/cx2-ofd.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/cx2-fnd.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/hamcrest-core-1.3.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/junit-4.12.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/log4j-api-2.5.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/log4j-core-2.5.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/slf4j-api-1.7.16.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/zookeeper-3.4.6.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/log4j-nosql-2.5.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/commons-lang3-3.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/cx2-frn.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+  </component>
+</module>

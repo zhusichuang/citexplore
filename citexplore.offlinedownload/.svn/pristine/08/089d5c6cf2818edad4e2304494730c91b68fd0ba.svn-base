@@ -1,0 +1,70 @@
+package citexplore.offlinedownload.downloader;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.basho.riak.client.api.commands.mapreduce.filters.UrlDecodeFilter;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.util.JSON;
+import com.sun.istack.internal.NotNull;
+
+/**
+ * @author Zhu, Sichuang
+ * @author Zhang, Yin
+ */
+public class UrlRedirection {
+
+	// **************** 公开变量
+
+	public final String redirectedUrl;
+
+	public final boolean noMoreRedirection;
+
+	// **************** 私有变量
+
+	/**
+	 * Log4j logger。
+	 */
+	private static Logger logger = LogManager.getLogger(UrlRedirection.class);
+
+	// **************** 继承方法
+
+	// **************** 公开方法
+
+	// TODO comment this file
+	public UrlRedirection(String redirectedUrl, boolean noMoreRedirection) {
+		this.redirectedUrl = redirectedUrl;
+		this.noMoreRedirection = noMoreRedirection;
+	}
+
+	public boolean json(ObjectNode node) {
+		if ("".equals(redirectedUrl)) {
+			return false;
+		}
+		node.put("redirectedUrl", redirectedUrl);
+		if (false == noMoreRedirection) {
+			node.put("noMoreRedirection", 0);
+		}
+		return true;
+	}
+
+	public static UrlRedirection fromJson(@NotNull ObjectNode objectNode) {
+
+		JsonNode value = null;
+		if (null == (value = objectNode.get("redirectedUrl"))) {
+			return null;
+		}
+		UrlRedirection urlRedirection = null;
+
+		if (null != objectNode.get("noMoreRedirection")) {
+			urlRedirection = new UrlRedirection(value.asText(), false);
+		} else {
+			urlRedirection = new UrlRedirection(value.asText(), true);
+		}
+
+		return urlRedirection;
+	}
+	// **************** 私有方法
+
+}

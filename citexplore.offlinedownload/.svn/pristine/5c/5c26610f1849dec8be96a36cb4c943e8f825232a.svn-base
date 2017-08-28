@@ -1,0 +1,243 @@
+package citexplore.offlinedownload.manager;
+
+import citexplore.foundation.Config;
+import com.mongodb.MongoClient;
+import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.sun.istack.internal.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bson.Document;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
+/**
+ * 离线下载器节点任务存储。
+ *
+ * @author Zhang, Yin
+ */
+public class NodeJobStorage {
+
+    // **************** 公开变量
+
+    /**
+     * 离线下载器节点id-资源url map。
+     */
+    protected HashMap<String, HashMap<String, Boolean>> nodeResourceMap = new
+            HashMap<>();
+
+    /**
+     * 资源url-离线下载器节点id map。
+     */
+    protected HashMap<String, String> resourceNodeMap = new HashMap<>();
+
+    /**
+     * 全局唯一的离线下载器节点任务存储。
+     */
+    public static final NodeJobStorage instance = new NodeJobStorage();
+
+    /**
+     * 离线下载器节点任务存储Mongodb服务器配置项键。
+     */
+    public static final String MONGODB_SERVERS = "cx.ofd.nodejobstorage" + "" +
+            ".mongodbservers";
+
+    // **************** 私有变量
+
+    /**
+     * 离线下载器节点任务存储MongoClient。
+     */
+    private MongoClient client = null;
+
+    /**
+     * 离线下载器节点任务存储表。
+     */
+    private MongoCollection collection = null;
+
+    /**
+     * 离线下载器节点id-资源url map锁。
+     */
+    private final Object lock = new Object();
+
+    /**
+     * Log4j logger。
+     */
+    private static Logger logger = LogManager.getLogger(NodeJobStorage.class);
+
+    // **************** 继承方法
+
+    // **************** 公开方法
+
+    /**
+     * 私有的构造函数。
+     */
+    protected NodeJobStorage() {
+        client = NodeJobStorage.clientFromMongodbServers(Config.getNotNull
+                (MONGODB_SERVERS));
+        collection = client.getDatabase("cx").getCollection
+                ("ofd_nodejobstorage");
+
+        MongoCursor<Document> cursor = collection.find().iterator();
+        synchronized (lock) {
+            cursor.forEachRemaining(document -> setToMap(document.getString
+                    ("nodeId"), document.getString("resourceUrl")));
+
+        }
+        cursor.close();
+    }
+
+    /**
+     * 将离线下载器节点任务存入离线下载器节点任务存储。*线程安全*
+     *
+     * @param nodeId      离线下载器节点id。
+     * @param resourceUrl 资源url。
+     */
+    public void put(@NotNull String nodeId, @NotNull String resourceUrl) {
+        synchronized (lock) {
+            setToMap(nodeId, resourceUrl);
+            setToCollection(nodeId, resourceUrl);
+        }
+    }
+
+    /**
+     * 获得资源url对应的离线下载器节点id。
+     *
+     * @param resourceUrl 资源url。
+     * @return 资源url对应的离线下载器节点id。
+     */
+    public String nodeId(@NotNull String resourceUrl) {
+        String nodeId = resourceNodeMap.get(resourceUrl);
+        return nodeId == null ? "" : nodeId;
+    }
+
+    /**
+     * 获得离线下载器节点id对应的全部资源url。*线程安全*
+     *
+     * @param nodeId 离线下载器节点id。
+     * @return 离线下载器节点id对应的全部资源url。
+     */
+    public String[] resourceUrls(@NotNull String nodeId) {
+        String[] ret;
+        synchronized (lock) {
+            HashMap<String, Boolean> resourceMap = nodeResourceMap.get(nodeId);
+            ret = resourceMap == null ? new String[0] : resourceMap.keySet()
+                    .stream().collect(ArrayList<String>::new, ArrayList::add,
+                            ArrayList::addAll).toArray(new String[resourceMap
+                            .size()]);
+        }
+        return ret;
+    }
+
+    /**
+     * 获得离线下载器节点id对应的全部资源url并将其清空。*线程安全*
+     *
+     * @param nodeId 离线下载器节点id。
+     * @return 离线下载器节点id对应的全部资源url。
+     */
+    public String[] getAndRemoveResourceUrls(@NotNull String nodeId) {
+        String[] ret;
+        synchronized (lock) {
+            HashMap<String, Boolean> resourceMap = nodeResourceMap.get(nodeId);
+            ret = resourceMap == null ? new String[0] : resourceMap.keySet()
+                    .stream().collect(ArrayList<String>::new, ArrayList::add,
+                            ArrayList::addAll).toArray(new String[resourceMap
+                            .size()]);
+            Arrays.stream(ret).forEach(resourceUrl ->
+                    removeFromMapAndCollection(nodeId, resourceUrl));
+        }
+        return ret;
+    }
+
+    /**
+     * 从离线下载器节点任务存储中删除离线下载器节点任务。*线程安全*
+     *
+     * @param resourceUrl 资源url。
+     */
+    public void remove(@NotNull String resourceUrl) {
+        synchronized (lock) {
+            String nodeId;
+            if ((nodeId = resourceNodeMap.get(resourceUrl)) != null) {
+                removeFromMapAndCollection(nodeId, resourceUrl);
+            }
+        }
+    }
+
+    /**
+     * 关闭离线下载器节点任务存储。
+     */
+    protected void close() {
+        client.close();
+    }
+
+    /**
+     * 从离线下载器节点任务存储Mongodb服务器获得离线下载器节点任务存储MongoClient。
+     *
+     * @param mongodbServers 从离线下载器节点任务存储Mongodb服务器。
+     * @return 离线下载器节点任务存储MongoClient。
+     */
+    protected static MongoClient clientFromMongodbServers(@NotNull String
+                                                                  mongodbServers) {
+        return new MongoClient((List<ServerAddress>) Arrays.stream
+                (mongodbServers.split(";")).map(server -> server.split(":"))
+                .collect(ArrayList<ServerAddress>::new, (list, pair) -> list
+                        .add(new ServerAddress(pair[0], Integer.parseInt
+                                (pair[1]))), ArrayList::addAll));
+    }
+
+    // **************** 私有方法
+
+    /**
+     * 将离线下载器节点任务存入离线下载器节点id-资源url map。
+     *
+     * @param nodeId      离线下载器节点id。
+     * @param resourceUrl 资源url。
+     */
+    private void setToMap(String nodeId, String resourceUrl) {
+        HashMap<String, Boolean> jobMap;
+        if ((jobMap = nodeResourceMap.get(nodeId)) == null) {
+            if ((jobMap = nodeResourceMap.get(nodeId)) == null) {
+                jobMap = new HashMap<>();
+                nodeResourceMap.put(nodeId, jobMap);
+            }
+        }
+        jobMap.put(resourceUrl, true);
+        resourceNodeMap.put(resourceUrl, nodeId);
+    }
+
+    /**
+     * 将离线下载器节点任务存入离线下载器节点任务存储表。
+     *
+     * @param nodeId      离线下载器节点id。
+     * @param resourceUrl 资源url。
+     */
+    private void setToCollection(String nodeId, String resourceUrl) {
+        Document document = new Document();
+        document.put("nodeId", nodeId);
+        document.put("resourceUrl", resourceUrl);
+        collection.insertOne(document);
+    }
+
+    /**
+     * 从离线下载器节点id-资源url map及离线下载器节点任务存储表中删除离线下载器节点任务。
+     *
+     * @param nodeId      离线下载器节点id。
+     * @param resourceUrl 资源url。
+     */
+    private void removeFromMapAndCollection(String nodeId, String resourceUrl) {
+        HashMap<String, Boolean> resourceMap;
+        if ((resourceMap = nodeResourceMap.get(nodeId)) != null) {
+            resourceMap.remove(resourceUrl);
+        }
+        resourceNodeMap.remove(resourceUrl);
+
+        Document document = new Document();
+        document.put("nodeId", nodeId);
+        document.put("resourceUrl", resourceUrl);
+        collection.deleteOne(document);
+    }
+
+}

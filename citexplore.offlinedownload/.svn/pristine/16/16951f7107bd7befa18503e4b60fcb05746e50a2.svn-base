@@ -1,0 +1,80 @@
+package citexplore.offlinedownload.downloader;
+
+import citexplore.foundation.util.NetUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Springer pdf url重定向类。
+ *
+ * @author Zhu, Sichuang
+ * @author Zhang, Yin
+ */
+public class SpringerPdfUrlRedirector extends PdfUrlRedirector {
+
+	// **************** 公开变量
+
+	// **************** 私有变量
+
+	/**
+	 * Log4j logger。
+	 */
+	private static Logger logger = LogManager
+			.getLogger(SpringerPdfUrlRedirector.class);
+
+	// **************** 继承方法
+
+	/**
+	 * 重定向url。
+	 *
+	 * @param url
+	 *            url。
+	 * @return 包含重定向信息的UrlRedirection对象。
+	 */
+	@Override
+	public UrlRedirection redirectImpl(String url) {
+		String html = NetUtil.fetchStringSafely(url);
+
+		Pattern pattern = null;
+		Matcher matcher = null;
+		if (url.contains("www.springer.com")) {
+			pattern = Pattern.compile(
+					"<\\s*a\\s+class=\"entitlementlink\"\\s+href=[\"']?"
+							+ "([^\"']+)");
+			matcher = pattern.matcher(html);
+			if (matcher.find()) {
+				return new UrlRedirection(matcher.group(1), false);
+			}
+		}
+
+		pattern = Pattern.compile(
+				"<\\s*meta\\s+name\\s*=\\s*[\"']?citation_pdf_url[\"']?\\s"
+						+ "+content\\s*=\\s*[\"']?([^\"']+)[\"']?");
+		matcher = pattern.matcher(html);
+		if (matcher.find()) {
+			return new UrlRedirection(matcher.group(1), true);
+		}
+
+		int end;
+		if ((end = html.indexOf("Download Book")) != -1) {
+			return new UrlRedirection(
+					url.substring(0, url.indexOf("/", url.indexOf("://") + 3))
+							+ html.substring(
+									html.lastIndexOf("href=\"", end) + 6,
+									html.indexOf("\"",
+											html.lastIndexOf("href=\"", end)
+													+ 6)),
+					true);
+		}
+
+		return new UrlRedirection(url, true);
+	}
+
+	// **************** 公开方法
+
+	// **************** 私有方法
+
+}

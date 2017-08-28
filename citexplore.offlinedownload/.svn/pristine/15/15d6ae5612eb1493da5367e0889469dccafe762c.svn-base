@@ -1,0 +1,52 @@
+package citexplore.offlinedownload.downloader;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import citexplore.foundation.util.NetUtil;
+
+/**
+ * @author Zhang, Yin
+ */
+public class ScienceDirectPdfUrlRedirector extends PdfUrlRedirector {
+
+	// **************** 公开变量
+
+	// **************** 私有变量
+
+	/**
+	 * Log4j logger。
+	 */
+	private static Logger logger = LogManager
+			.getLogger(ScienceDirectPdfUrlRedirector.class);
+
+	// **************** 继承方法
+
+	/**
+	 * 重定向url。
+	 *
+	 * @param url
+	 *            url。
+	 * @return 重定向的Url。
+	 */
+	@Override
+	public UrlRedirection redirectImpl(String url) {
+		String html = NetUtil.fetchStringSafely(url);
+		int end;
+		if ((end = html.indexOf("Download PDF")) != -1) {
+			UrlRedirection urlRedirection = new UrlRedirection(
+					html.substring(html.lastIndexOf("pdfurl", end) + 8,
+							html.indexOf("\"",
+									html.lastIndexOf("pdfurl", end) + 8)),
+					true);
+        	RedirectionCache.instance.put(url, urlRedirection);
+        	return urlRedirection;
+		}
+		return null;
+	}
+
+	// **************** 公开方法
+
+	// **************** 私有方法
+
+}

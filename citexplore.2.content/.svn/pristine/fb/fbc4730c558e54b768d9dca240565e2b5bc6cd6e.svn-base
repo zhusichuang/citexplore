@@ -1,0 +1,15 @@
+cx.ofd.nodepool.nodeheartbeatinterval=500
+cx.ofd.nodepool.nodeheartbeatconnecttimeout=50
+cx.ofd.nodepool.nodeheartbeatreadtimeout=50
+cx.ofd.nodepool.nodecommandconnecttimeout=50
+cx.ofd.nodepool.nodecommandreadtimeout=50
+cx.ofd.resourcestorage.riakservers=192.168.1.30:8087
+cx.ofd.nodepool.nodeids=dls1;dls2;dls3
+cx.ofd.nodepool.nodeendpoints=http://localhost:54345/;http://localhost:54346/;http://localhost:54347/
+cx.ofd.jobfinishedinformer.kafkabootstrapservers=localhost:9092
+cx.ofd.jobfinishedinformertest.zookeeperservers=localhost:2181
+cx.ofd.jobfinishedinformertest.zookeepersessiontimeout=500
+cx.ofd.jobfinishedinformertest.zookeepersynctime=250
+cx.ofd.jobfinishedinformertest.kafkaautocommitinterval=1000
+cx.ofd.downloadjob.hdfsservers=hdfs://192.168.1.60:9000/
+cx.fnd.zookeeperlockfactory.zookeeperservers=192.168.1.201:2181,192.168.1.202:2181,192.168.1.203:2181,192.168.1.204:2181,192.168.1.205:2181/test

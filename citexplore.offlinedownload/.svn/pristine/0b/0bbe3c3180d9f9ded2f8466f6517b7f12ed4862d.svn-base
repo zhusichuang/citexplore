@@ -1,0 +1,57 @@
+package citexplore.offlinedownload.downloader;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import citexplore.foundation.util.NetUtil;
+
+/**
+ * @author Zhang, Yin
+ */
+public class IeeeXplorePdfUrlRedirector extends PdfUrlRedirector {
+
+	// **************** 公开变量
+
+	// **************** 私有变量
+
+	/**
+	 * Log4j logger。
+	 */
+	private static Logger logger = LogManager
+			.getLogger(IeeeXplorePdfUrlRedirector.class);
+
+	// **************** 继承方法
+
+	/**
+	 * 重定向url。
+	 *
+	 * @param url
+	 *            url。
+	 * @return 重定向的Url。
+	 */
+	@Override
+	public UrlRedirection redirectImpl(String url) {
+		String html = NetUtil.fetchStringSafely(url);
+		int start;
+		if ((start = html.indexOf("Full Text as PDF")) != -1) {
+			html = NetUtil.fetchStringSafely(url.substring(0,
+					url.indexOf("/", url.indexOf("://") + 3))
+					+ html.substring(html.indexOf("href", start) + 6, html
+							.indexOf("'", html.indexOf("href", start) + 6)));
+			UrlRedirection urlRedirection = new UrlRedirection(
+					html.substring(html.lastIndexOf("frame src=") + 11,
+							html.indexOf("\"",
+									html.lastIndexOf("frame src=") + 11)),
+					true);
+
+			RedirectionCache.instance.put(url, urlRedirection);
+			return urlRedirection;
+		}
+		return null;
+	}
+
+	// **************** 公开方法
+
+	// **************** 私有方法
+
+}

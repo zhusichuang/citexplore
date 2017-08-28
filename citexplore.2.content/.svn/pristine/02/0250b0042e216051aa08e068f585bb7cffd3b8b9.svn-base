@@ -1,0 +1,67 @@
+package citexplore.content;
+
+import citexplore.offlinedownload.Resource;
+import citexplore.offlinedownload.ResourceStatus;
+import citexplore.offlinedownload.ResourceStorage;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+/**
+ * 内容提供者工厂。
+ *
+ * @author Zhang, Yin
+ */
+public abstract class ContentProviderFactory {
+
+	// **************** 公开变量
+
+	/**
+	 * 全局唯一的内容提供者工厂。
+	 */
+	public static ContentProviderFactory instance;
+
+	// **************** 私有变量
+
+	/**
+	 * Log4j logger。
+	 */
+	private static Logger logger = LogManager
+			.getLogger(ContentProviderFactory.class);
+
+	// **************** 继承方法
+
+	// **************** 公开方法
+
+	/**
+	 * 生成资源对应的内容提供者。
+	 *
+	 * @param url
+	 *            需要生成内容提供者的链接。
+	 * @return 资源对应的内容提供者。
+	 */
+	public ContentProvider produce(String url) {
+		Resource resource = ResourceStorage.instance.get(url);
+		if (ResourceStatus.finished != resource.status) {
+			return new NoContentProvider();
+		}
+		switch (resource.mime.toLowerCase()) {
+		case "application/pdf":
+			return new PdfContentProvider(resource);
+		case "text/html":
+			return new HtmlContentProvider(resource);
+		default:
+			return new NoContentProvider();
+
+		}
+	}
+
+	// **************** 私有方法
+
+	/**
+	 * 私有的构造函数。
+	 */
+	private ContentProviderFactory() {
+	}
+
+}
